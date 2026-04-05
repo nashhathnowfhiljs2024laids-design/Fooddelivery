@@ -77,6 +77,9 @@ function App() {
     const timeString = deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     
     localStorage.setItem('deliveryTime', timeString);
+    localStorage.setItem('orderStatus', 'Order Placed');
+    localStorage.setItem('orderTimestamp', Date.now());
+    
     alert(`Order placed successfully! Your food will arrive by ${timeString}`);
     setCurrentPage('home');
     setOrderSummary(null);

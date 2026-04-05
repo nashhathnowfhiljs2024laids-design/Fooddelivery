@@ -1,11 +1,50 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
+=======
+import React, { useState, useEffect } from 'react';
+>>>>>>> 77150ab89e312f9b9a8920355d8dc4637ba508fd
 import { ShoppingCart, User, Search, Menu, X, Clock } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 
 const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery }) => {
   const { getCount } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+<<<<<<< HEAD
   const deliveryTime = localStorage.getItem('deliveryTime');
+=======
+  const [orderStatus, setOrderStatus] = useState(null);
+  const deliveryTime = localStorage.getItem('deliveryTime');
+
+  useEffect(() => {
+    const updateOrderStatus = () => {
+      const timestamp = localStorage.getItem('orderTimestamp');
+      if (!timestamp) return;
+
+      const elapsed = Date.now() - parseInt(timestamp);
+      const minutes = elapsed / 60000;
+
+      if (minutes < 5) {
+        setOrderStatus('Order Placed');
+      } else if (minutes < 15) {
+        setOrderStatus('Preparing');
+        localStorage.setItem('orderStatus', 'Preparing');
+      } else if (minutes < 25) {
+        setOrderStatus('On the Way');
+        localStorage.setItem('orderStatus', 'On the Way');
+      } else if (minutes < 30) {
+        setOrderStatus('Arriving Soon');
+        localStorage.setItem('orderStatus', 'Arriving Soon');
+      } else {
+        setOrderStatus('Delivered');
+        localStorage.setItem('orderStatus', 'Delivered');
+      }
+    };
+
+    updateOrderStatus();
+    const interval = setInterval(updateOrderStatus, 10000);
+    return () => clearInterval(interval);
+  }, []);
+>>>>>>> 77150ab89e312f9b9a8920355d8dc4637ba508fd
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -27,10 +66,25 @@ const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery }) => {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
+<<<<<<< HEAD
             {deliveryTime && (
               <div className="flex items-center space-x-1 text-green-600 bg-green-50 px-3 py-1 rounded-full">
                 <Clock className="w-4 h-4" />
                 <span className="text-sm font-medium">Arrives by {deliveryTime}</span>
+=======
+            {deliveryTime && orderStatus && (
+              <div className="flex items-center space-x-2">
+                <div className={`flex items-center space-x-1 px-3 py-1 rounded-full ${
+                  orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
+                  orderStatus === 'On the Way' ? 'bg-blue-100 text-blue-700' :
+                  orderStatus === 'Preparing' ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-orange-100 text-orange-700'
+                }`}>
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm font-medium">{orderStatus}</span>
+                </div>
+                <span className="text-sm text-gray-600">by {deliveryTime}</span>
+>>>>>>> 77150ab89e312f9b9a8920355d8dc4637ba508fd
               </div>
             )}
             
@@ -81,10 +135,25 @@ const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery }) => {
               </div>
             </div>
             <div className="space-y-3">
+<<<<<<< HEAD
               {deliveryTime && (
                 <div className="flex items-center space-x-2 text-green-600">
                   <Clock className="w-4 h-4" />
                   <span className="text-sm">Arrives by {deliveryTime}</span>
+=======
+              {deliveryTime && orderStatus && (
+                <div className="flex items-center space-x-2">
+                  <div className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${
+                    orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
+                    orderStatus === 'On the Way' ? 'bg-blue-100 text-blue-700' :
+                    orderStatus === 'Preparing' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-orange-100 text-orange-700'
+                  }`}>
+                    <Clock className="w-3 h-3" />
+                    <span>{orderStatus}</span>
+                  </div>
+                  <span className="text-xs text-gray-600">by {deliveryTime}</span>
+>>>>>>> 77150ab89e312f9b9a8920355d8dc4637ba508fd
                 </div>
               )}
               
