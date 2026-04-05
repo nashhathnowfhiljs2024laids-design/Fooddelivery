@@ -2,42 +2,62 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import CartDrawer from './components/CartDrawer';
 import LoginModal from './components/LoginModal';
+import Notification from './components/Notification';
 import HomePage from './pages/HomePage';
 import RestaurantPage from './pages/RestaurantPage';
 import CheckoutPage from './pages/CheckoutPage';
-import OrderTrackingPage from './pages/OrderTrackingPage';
-import AdminDashboard from './pages/AdminDashboard';
+import AddToCartPage from './pages/AddToCartPage';
+import LoginPage from './pages/LoginPage';
+import { useNotification } from './hooks/useNotification';
 
 function App() {
   const [user, setUser] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
-  const [currentPage, setCurrentPage] = useState('home');
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [currentPage, setCurrentPage] = useState('login');
   const [orderSummary, setOrderSummary] = useState(null);
   const [appliedPromo, setAppliedPromo] = useState(null);
-  const [currentOrder, setCurrentOrder] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
-
+  const { notification, showNotification } = useNotification();
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
-    if (savedUser) setUser(JSON.parse(savedUser));
-    
-    const adminMode = localStorage.getItem('adminMode') === 'true';
-    setIsAdmin(adminMode);
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
   }, []);
+
+  const handleLoginPageOpen = () => {
+    setCurrentPage('login');
+  };
+
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    setCurrentPage('home');
+  };
 
   const handleRestaurantSelect = (restaurant) => {
     setSelectedRestaurant(restaurant);
     setCurrentPage('restaurant');
   };
 
+  const handleItemSelect = (item, restaurant) => {
+    setSelectedItem(item);
+    setSelectedRestaurant(restaurant);
+    setCurrentPage('addToCart');
+  };
+
   const handleBackToHome = () => {
     setSelectedRestaurant(null);
+    setSelectedItem(null);
     setCurrentPage('home');
-    setCurrentOrder(null);
+  };
+
+  const handleBackToRestaurant = () => {
+    setSelectedItem(null);
+    setCurrentPage('restaurant');
   };
 
   const handleCheckout = (summary, promo) => {
@@ -51,68 +71,56 @@ function App() {
     setIsCartOpen(false);
   };
 
-  const handleOrderPlace = (order) => {
-    setCurrentOrder(order);
-    setCurrentPage('tracking');
+  const handleOrderPlace = () => {
+    const deliveryTime = new Date();
+    deliveryTime.setMinutes(deliveryTime.getMinutes() + 30);
+    const timeString = deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    localStorage.setItem('deliveryTime', timeString);
+    alert(`Order placed successfully! Your food will arrive by ${timeString}`);
+    setCurrentPage('home');
     setOrderSummary(null);
     setAppliedPromo(null);
   };
 
-  const handleAdminToggle = () => {
-    const newAdminMode = !isAdmin;
-    setIsAdmin(newAdminMode);
-    localStorage.setItem('adminMode', newAdminMode.toString());
-    setCurrentPage('home');
-  };
-
   const renderCurrentPage = () => {
-    try {
-      if (isAdmin && currentPage === 'home') {
-        return <AdminDashboard />;
-      }
+    if (!user && currentPage !== 'login') {
+      return <LoginPage onLogin={handleLoginSuccess} onBack={() => setCurrentPage('login')} />;
+    }
 
-      switch (currentPage) {
-        case 'restaurant':
-          return <RestaurantPage restaurant={selectedRestaurant} onBack={handleBackToHome} />;
-        case 'checkout':
-          return (
-            <CheckoutPage
-              orderSummary={orderSummary}
-              appliedPromo={appliedPromo}
-              onBack={() => { setCurrentPage('home'); setIsCartOpen(true); }}
-              onOrderPlace={handleOrderPlace}
-              user={user}
-            />
-          );
-        case 'tracking':
-          return <OrderTrackingPage order={currentOrder} onBack={handleBackToHome} />;
-        default:
-          return <HomePage onRestaurantSelect={handleRestaurantSelect} searchQuery={searchQuery} />;
-      }
-    } catch (error) {
-      console.error('Page render error:', error);
-      return (
-        <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h2>
-          <button onClick={() => window.location.reload()} className="btn-primary">
-            Reload Page
-          </button>
-        </div>
-      );
+    switch (currentPage) {
+      case 'login':
+        return <LoginPage onLogin={handleLoginSuccess} onBack={handleBackToHome} />;
+      case 'restaurant':
+        return <RestaurantPage restaurant={selectedRestaurant} onBack={handleBackToHome} onItemSelect={handleItemSelect} showNotification={showNotification} />;
+      case 'addToCart':
+        return <AddToCartPage item={selectedItem} restaurant={selectedRestaurant} onBack={handleBackToRestaurant} showNotification={showNotification} />;
+      case 'checkout':
+        return (
+          <CheckoutPage
+            orderSummary={orderSummary}
+            appliedPromo={appliedPromo}
+            onBack={() => { setCurrentPage('home'); setIsCartOpen(true); }}
+            onOrderPlace={handleOrderPlace}
+            user={user}
+          />
+        );
+      default:
+        return <HomePage onRestaurantSelect={handleRestaurantSelect} searchQuery={searchQuery} showNotification={showNotification} />;
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar
-        onCartOpen={() => setIsCartOpen(true)}
-        onLoginOpen={() => setIsLoginOpen(true)}
-        user={user}
-        onSearch={setSearchQuery}
-        searchQuery={searchQuery}
-        isAdmin={isAdmin}
-        onAdminToggle={handleAdminToggle}
-      />
+      {user && (
+        <Navbar
+          onCartOpen={() => setIsCartOpen(true)}
+          onLoginOpen={handleLoginPageOpen}
+          user={user}
+          onSearch={setSearchQuery}
+          searchQuery={searchQuery}
+        />
+      )}
 
       <main className="pb-16 min-h-screen">
         {renderCurrentPage()}
@@ -131,11 +139,16 @@ function App() {
         user={user}
       />
 
+      <Notification 
+        notification={notification} 
+        onClose={() => showNotification(null)} 
+      />
+
       <footer className="bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">FoodieExpress</h3>
-            <p className="text-gray-600 text-sm">Delicious food delivered fast. Demo app built with React + Vite.</p>
+            <p className="text-gray-600 text-sm">Delicious food delivered fast.</p>
           </div>
         </div>
       </footer>

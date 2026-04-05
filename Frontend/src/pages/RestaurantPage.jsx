@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Star, Clock, Truck } from 'lucide-react';
 import FoodItemCard from '../components/FoodItemCard';
 
-const RestaurantPage = ({ restaurant, onBack }) => {
+const RestaurantPage = ({ restaurant, onBack, onItemSelect, showNotification }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   if (!restaurant) return null;
@@ -86,7 +86,7 @@ const RestaurantPage = ({ restaurant, onBack }) => {
 
       <div className="space-y-4">
         {filteredMenu.map((item) => (
-          <FoodItemCard key={item.id} item={item} />
+          <FoodItemCard key={item.id} item={item} onItemSelect={() => onItemSelect(item, restaurant)} showNotification={showNotification} />
         ))}
       </div>
     </div>

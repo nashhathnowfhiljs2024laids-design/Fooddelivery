@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Filter } from 'lucide-react';
 import RestaurantCard from '../components/RestaurantCard';
+import Offers from '../components/Offers';
 import { restaurants as defaultRestaurants } from '../data/mockData';
 
-const HomePage = ({ onRestaurantSelect, searchQuery }) => {
+const HomePage = ({ onRestaurantSelect, searchQuery, showNotification }) => {
   const [restaurants, setRestaurants] = useState(defaultRestaurants);
   const [filteredRestaurants, setFilteredRestaurants] = useState(defaultRestaurants);
   const [selectedCuisine, setSelectedCuisine] = useState('All');
@@ -34,6 +35,8 @@ const HomePage = ({ onRestaurantSelect, searchQuery }) => {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Delicious food, delivered fast</h1>
         <p className="text-xl text-gray-600">Order from your favorite restaurants</p>
       </div>
+
+      <Offers />
 
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">

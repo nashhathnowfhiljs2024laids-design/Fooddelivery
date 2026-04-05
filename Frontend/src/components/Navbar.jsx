@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { ShoppingCart, User, Search, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, X, Clock } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 
-const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery, isAdmin, onAdminToggle }) => {
+const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery }) => {
   const { getCount } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const deliveryTime = localStorage.getItem('deliveryTime');
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -26,10 +27,26 @@ const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery, isAdmin,
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
+            {deliveryTime && (
+              <div className="flex items-center space-x-1 text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                <Clock className="w-4 h-4" />
+                <span className="text-sm font-medium">Arrives by {deliveryTime}</span>
+              </div>
+            )}
+            
             <button onClick={onLoginOpen} className="flex items-center space-x-1 text-gray-700 hover:text-primary-600">
               <User className="w-5 h-5" />
-              <span>{user ? user.name : 'Login'}</span>
+              <span>Profile</span>
             </button>
+
+            {user && (
+              <button onClick={() => {
+                localStorage.removeItem('user');
+                window.location.reload();
+              }} className="text-gray-700 hover:text-red-600 text-sm">
+                Logout
+              </button>
+            )}
 
             <button onClick={onCartOpen} className="relative flex items-center space-x-1 text-gray-700 hover:text-primary-600">
               <ShoppingCart className="w-5 h-5" />
@@ -39,15 +56,6 @@ const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery, isAdmin,
                   {getCount()}
                 </span>
               )}
-            </button>
-
-            <button
-              onClick={onAdminToggle}
-              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                isAdmin ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700'
-              }`}
-            >
-              {isAdmin ? 'Admin' : 'User'}
             </button>
           </div>
 
@@ -73,17 +81,29 @@ const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery, isAdmin,
               </div>
             </div>
             <div className="space-y-3">
+              {deliveryTime && (
+                <div className="flex items-center space-x-2 text-green-600">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm">Arrives by {deliveryTime}</span>
+                </div>
+              )}
+              
               <button onClick={() => { onLoginOpen(); setIsMenuOpen(false); }} className="flex items-center space-x-2 text-gray-700">
                 <User className="w-5 h-5" />
-                <span>{user ? user.name : 'Login'}</span>
+                <span>Profile</span>
               </button>
               <button onClick={() => { onCartOpen(); setIsMenuOpen(false); }} className="flex items-center space-x-2 text-gray-700">
                 <ShoppingCart className="w-5 h-5" />
                 <span>Cart ({getCount()})</span>
               </button>
-              <button onClick={onAdminToggle} className={`px-3 py-1 rounded-full text-xs font-medium ${isAdmin ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700'}`}>
-                {isAdmin ? 'Admin Mode' : 'User Mode'}
-              </button>
+              {user && (
+                <button onClick={() => {
+                  localStorage.removeItem('user');
+                  window.location.reload();
+                }} className="text-red-600 text-sm">
+                  Logout
+                </button>
+              )}
             </div>
           </div>
         )}

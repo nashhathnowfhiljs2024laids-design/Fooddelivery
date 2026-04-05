@@ -159,10 +159,3 @@ export const restaurants = [
   }
 ];
 
-export const promoCodes = [
-  { code: "WELCOME50", discount: 50, minOrder: 200 },
-  { code: "SAVE100", discount: 100, minOrder: 500 },
-  { code: "FIRST25", discount: 25, minOrder: 150 },
-  { code: "WEEKEND20", discount: 20, minOrder: 300 },
-  { code: "FREEDEL", discount: 0, minOrder: 299, freeDelivery: true }
-];

@@ -21,7 +21,7 @@ const CartDrawer = ({ isOpen, onClose, onCheckout }) => {
   };
 
   const orderSummary = cart.length > 0 ? calculateTotal(cart, 49, appliedPromo) : 
-    { subtotal: 0, tax: 0, deliveryFee: 0, discount: 0, total: 0 };
+    { subtotal: 0, tax: 0, deliveryFee: 49, discount: 0, total: 49 };
 
   if (!isOpen) return null;
 
@@ -47,24 +47,24 @@ const CartDrawer = ({ isOpen, onClose, onCheckout }) => {
               </div>
             ) : (
               <div className="space-y-4">
-                {cart.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded" />
+                {cart.map((item, index) => (
+                  <div key={item.id || index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <img src={item.image || '/placeholder.jpg'} alt={item.name || 'Product'} className="w-12 h-12 object-cover rounded" />
                     <div className="flex-1">
-                      <h4 className="font-medium text-sm">{item.name}</h4>
-                      <p className="text-gray-600 text-sm">₹{item.price}</p>
+                      <h4 className="font-medium text-sm">{item.name || 'Unknown Product'}</h4>
+                      <p className="text-gray-600 text-sm">₹{item.price || 0}</p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center"
+                        onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
+                        className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center hover:bg-gray-400"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="font-medium min-w-[1.5rem] text-center">{item.quantity}</span>
+                      <span className="font-medium min-w-[1.5rem] text-center">{item.quantity || 1}</span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center"
+                        onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
+                        className="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center hover:bg-primary-700"
                       >
                         <Plus className="w-3 h-3" />
                       </button>

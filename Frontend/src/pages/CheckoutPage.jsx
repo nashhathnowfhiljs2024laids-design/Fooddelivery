@@ -16,23 +16,8 @@ const CheckoutPage = ({ orderSummary, appliedPromo, onBack, onOrderPlace, user }
     setIsPlacing(true);
     
     setTimeout(() => {
-      const order = {
-        id: Date.now(),
-        items: cart,
-        summary: orderSummary,
-        promoCode: appliedPromo,
-        paymentMethod,
-        user,
-        timestamp: new Date().toISOString(),
-        status: 'Order Placed'
-      };
-
-      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-      orders.unshift(order);
-      localStorage.setItem('orders', JSON.stringify(orders));
-      
       clearCart();
-      onOrderPlace(order);
+      onOrderPlace();
       setIsPlacing(false);
     }, 2000);
   };
