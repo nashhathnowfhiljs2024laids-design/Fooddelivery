@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useState, useEffect, useMemo } from 'react';
 
 export const CartContext = createContext(null);
 
@@ -7,79 +7,65 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem('cart');
-      if (savedCart) {
-        const parsedCart = JSON.parse(savedCart);
+      const saved = localStorage.getItem('cart');
+      if (saved) {
+        const parsedCart = JSON.parse(saved);
         if (Array.isArray(parsedCart)) {
           setCart(parsedCart);
         }
       }
     } catch (error) {
-      console.error('Failed to load cart from localStorage:', error);
+      console.error('Error loading cart:', error);
       localStorage.removeItem('cart');
     }
   }, []);
 
-  const saveCart = (nextCart) => {
-    setCart(nextCart);
+  const saveCart = (newCart) => {
     try {
-      localStorage.setItem('cart', JSON.stringify(nextCart));
+      setCart(newCart);
+      localStorage.setItem('cart', JSON.stringify(newCart));
     } catch (error) {
-      console.error('Failed to save cart to localStorage:', error);
+      console.error('Error saving cart:', error);
     }
   };
 
   const addToCart = (item) => {
-    const quantityToAdd = item.quantity && item.quantity > 0 ? item.quantity : 1;
-    const existingItem = cart.find((cartItem) => cartItem.id === item.id);
-
-    if (existingItem) {
-      saveCart(
-        cart.map((cartItem) =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + quantityToAdd }
-            : cartItem
-        )
-      );
+    // Determine if item already exists based on id and potentially size/addons
+    const existingIndex = cart.findIndex(c => 
+      c.id === item.id && 
+      c.size === item.size && 
+      JSON.stringify(c.addOns) === JSON.stringify(item.addOns)
+    );
+    
+    if (existingIndex > -1) {
+      const newCart = [...cart];
+      newCart[existingIndex].quantity += (item.quantity || 1);
+      saveCart(newCart);
     } else {
-      saveCart([
-        ...cart,
-        {
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          image: item.image || item.photo || '',
-          quantity: quantityToAdd,
-          ...(item.size ? { size: item.size } : {}),
-          ...(item.addOns ? { addOns: item.addOns } : {}),
-          ...(item.specialInstructions ? { specialInstructions: item.specialInstructions } : {}),
-          ...(item.restaurant ? { restaurant: item.restaurant } : {}),
-        },
-      ]);
+      const cartItem = {
+        ...item,
+        quantity: item.quantity || 1
+      };
+      saveCart([...cart, cartItem]);
     }
   };
 
   const updateQuantity = (id, quantity) => {
     if (quantity <= 0) {
-      saveCart(cart.filter((cartItem) => cartItem.id !== id));
+      saveCart(cart.filter(c => c.id !== id));
     } else {
-      saveCart(
-        cart.map((cartItem) =>
-          cartItem.id === id ? { ...cartItem, quantity } : cartItem
-        )
-      );
+      saveCart(cart.map(c => c.id === id ? {...c, quantity} : c));
     }
   };
 
   const clearCart = () => saveCart([]);
 
-  const getTotal = () => cart.reduce((sum, cartItem) => sum + cartItem.price * cartItem.quantity, 0);
-
-  const getCount = () => cart.reduce((sum, cartItem) => sum + cartItem.quantity, 0);
-
+  const getTotal = () => cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const getCount = () => cart.reduce((sum, item) => sum + item.quantity, 0);
+  
   const getItemQuantity = (id) => {
-    const found = cart.find((cartItem) => cartItem.id === id);
-    return found ? found.quantity : 0;
+    const item = cart.find(c => c.id === id);
+    return item ? item.quantity : 0;
   };
 
   const value = useMemo(
@@ -87,5 +73,9 @@ export const CartProvider = ({ children }) => {
     [cart]
   );
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+    </CartContext.Provider>
+  );
 };
