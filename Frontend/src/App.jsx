@@ -6,7 +6,10 @@ import Notification from './components/Notification';
 import HomePage from './pages/HomePage';
 import RestaurantPage from './pages/RestaurantPage';
 import CheckoutPage from './pages/CheckoutPage';
+import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import AddToCartPage from './pages/AddToCartPage';
+import CustomerDashboard from './pages/CustomerDashboard';
+import RestaurantDashboard from './pages/RestaurantDashboard';
 import LoginPage from './pages/LoginPage';
 import { useNotification } from './hooks/useNotification';
 
@@ -14,11 +17,14 @@ function App() {
   const [user, setUser] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [loginRole, setLoginRole] = useState(null);
+  const [forceLogin, setForceLogin] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [currentPage, setCurrentPage] = useState('login');
   const [orderSummary, setOrderSummary] = useState(null);
   const [appliedPromo, setAppliedPromo] = useState(null);
+  const [orderState, setOrderState] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { notification, showNotification } = useNotification();
 
@@ -30,12 +36,42 @@ function App() {
   }, []);
 
   const handleLoginPageOpen = () => {
-    setCurrentPage('login');
+    setLoginRole(null);
+    setForceLogin(false);
+    setIsLoginOpen(true);
+  };
+
+  const handleCustomerDashboard = () => {
+    if (!user || user.role !== 'customer') {
+      setLoginRole('customer');
+      setForceLogin(true);
+      setIsLoginOpen(true);
+      return;
+    }
+    setCurrentPage('customerDashboard');
+  };
+
+  const handleRestaurantDashboard = () => {
+    if (!user || user.role !== 'restaurant') {
+      setLoginRole('restaurant');
+      setForceLogin(true);
+      setIsLoginOpen(true);
+      return;
+    }
+    setCurrentPage('restaurantDashboard');
   };
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
-    setCurrentPage('home');
+    if (loginRole === 'restaurant') {
+      setCurrentPage('restaurantDashboard');
+    } else if (loginRole === 'customer') {
+      setCurrentPage('customerDashboard');
+    } else {
+      setCurrentPage('home');
+    }
+    setLoginRole(null);
+    setForceLogin(false);
   };
 
   const handleRestaurantSelect = (restaurant) => {
@@ -71,19 +107,29 @@ function App() {
     setIsCartOpen(false);
   };
 
-  const handleOrderPlace = () => {
-    const deliveryTime = new Date();
-    deliveryTime.setMinutes(deliveryTime.getMinutes() + 30);
-    const timeString = deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    
-    localStorage.setItem('deliveryTime', timeString);
-    localStorage.setItem('orderStatus', 'Order Placed');
-    localStorage.setItem('orderTimestamp', Date.now());
-    
-    alert(`Order placed successfully! Your food will arrive by ${timeString}`);
-    setCurrentPage('home');
+  const handleOrderPlace = (orderData) => {
+    const placedAt = Date.now();
+    const orderRecord = {
+      ...orderData,
+      placedAt,
+      status: 'Preparing',
+      stageIndex: 1,
+      estimatedPrep: '10–20 minutes',
+      estimatedDelivery: '30–45 minutes',
+    };
+
+    const existingOrders = JSON.parse(localStorage.getItem('customerOrders') || '[]');
+    localStorage.setItem('customerOrders', JSON.stringify([orderRecord, ...existingOrders]));
+
+    setOrderState(orderRecord);
     setOrderSummary(null);
     setAppliedPromo(null);
+    setCurrentPage('orderConfirmation');
+  };
+
+  const handleContinueHome = () => {
+    setOrderState(null);
+    setCurrentPage('home');
   };
 
   const renderCurrentPage = () => {
@@ -108,6 +154,12 @@ function App() {
             user={user}
           />
         );
+      case 'orderConfirmation':
+        return <OrderConfirmationPage order={orderState} onContinue={handleContinueHome} />;
+      case 'customerDashboard':
+        return <CustomerDashboard user={user} onBack={handleBackToHome} />;
+      case 'restaurantDashboard':
+        return <RestaurantDashboard onBack={handleBackToHome} />;
       default:
         return <HomePage onRestaurantSelect={handleRestaurantSelect} searchQuery={searchQuery} showNotification={showNotification} />;
     }
@@ -119,6 +171,8 @@ function App() {
         <Navbar
           onCartOpen={() => setIsCartOpen(true)}
           onLoginOpen={handleLoginPageOpen}
+          onCustomerDashboard={handleCustomerDashboard}
+          onRestaurantDashboard={handleRestaurantDashboard}
           user={user}
           onSearch={setSearchQuery}
           searchQuery={searchQuery}
@@ -138,8 +192,10 @@ function App() {
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
-        onLogin={setUser}
+        onLogin={handleLoginSuccess}
         user={user}
+        loginRole={loginRole}
+        forceLogin={forceLogin}
       />
 
       <Notification 

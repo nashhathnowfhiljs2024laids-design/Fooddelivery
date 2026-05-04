@@ -48,7 +48,7 @@ const AddToCartPage = ({ item, restaurant, onBack, showNotification }) => {
     };
     
     addToCart(cartItem);
-    showNotification('Product added to cart');
+    showNotification('Food added to cart successfully');
     onBack();
   };
 

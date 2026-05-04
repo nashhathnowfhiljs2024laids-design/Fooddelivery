@@ -5,6 +5,7 @@ import cors from "cors";
 import foodRoutes from "./routes/foodRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import favoriteRoutes from "./routes/favoriteRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 const app = express();
 
@@ -17,6 +18,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/foodapp")
   .catch(err => console.log(err));
 
 // Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/foods", foodRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/favorites", favoriteRoutes);

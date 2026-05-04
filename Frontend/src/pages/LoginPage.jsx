@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, ArrowLeft } from 'lucide-react';
+import { User, Mail, Phone, ArrowLeft } from 'lucide-react';
 
 const LoginPage = ({ onLogin, onBack }) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState('customer');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const userData = { name, email, phone, address };
+    if (!password.trim()) return;
+    const userData = { name, email, phone, role };
     onLogin(userData);
     localStorage.setItem('user', JSON.stringify(userData));
   };
@@ -22,7 +24,7 @@ const LoginPage = ({ onLogin, onBack }) => {
       setName(userData.name || '');
       setEmail(userData.email || '');
       setPhone(userData.phone || '');
-      setAddress(userData.address || '');
+      setRole(userData.role || 'customer');
     }
   }, []);
 
@@ -90,19 +92,17 @@ const LoginPage = ({ onLogin, onBack }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-                <textarea
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  placeholder="Enter your address"
-                  rows="3"
-                  required
-                />
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                placeholder="Enter your password"
+                required
+              />
             </div>
+
 
             <button type="submit" className="w-full btn-primary py-3 text-lg">
               Save & Continue

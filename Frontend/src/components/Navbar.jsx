@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, User, Search, Menu, X, Clock } from 'lucide-react';
+import PropTypes from 'prop-types';
+import { ShoppingCart, User, Search, Menu, X, Clock, Star, Layers } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 
-const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery }) => {
+const Navbar = ({ onCartOpen, onLoginOpen, onCustomerDashboard, onRestaurantDashboard, user, onSearch, searchQuery }) => {
   const { getCount } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [orderStatus, setOrderStatus] = useState(null);
@@ -78,6 +79,16 @@ const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery }) => {
               <span>Profile</span>
             </button>
 
+            <button onClick={onCustomerDashboard} className="flex items-center space-x-1 text-gray-700 hover:text-primary-600">
+              <Star className="w-5 h-5" />
+              <span>Customer Dashboard</span>
+            </button>
+
+            <button onClick={onRestaurantDashboard} className="flex items-center space-x-1 text-gray-700 hover:text-primary-600">
+              <Layers className="w-5 h-5" />
+              <span>Restaurant Dashboard</span>
+            </button>
+
             {user && (
               <button onClick={() => {
                 localStorage.removeItem('user');
@@ -139,6 +150,14 @@ const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery }) => {
                 <User className="w-5 h-5" />
                 <span>Profile</span>
               </button>
+              <button onClick={() => { onCustomerDashboard(); setIsMenuOpen(false); }} className="flex items-center space-x-2 text-gray-700">
+                <Star className="w-5 h-5" />
+                <span>Customer Dashboard</span>
+              </button>
+              <button onClick={() => { onRestaurantDashboard(); setIsMenuOpen(false); }} className="flex items-center space-x-2 text-gray-700">
+                <Layers className="w-5 h-5" />
+                <span>Restaurant Dashboard</span>
+              </button>
               <button onClick={() => { onCartOpen(); setIsMenuOpen(false); }} className="flex items-center space-x-2 text-gray-700">
                 <ShoppingCart className="w-5 h-5" />
                 <span>Cart ({getCount()})</span>
@@ -157,6 +176,20 @@ const Navbar = ({ onCartOpen, onLoginOpen, user, onSearch, searchQuery }) => {
       </div>
     </nav>
   );
+};
+
+Navbar.propTypes = {
+  onCartOpen: PropTypes.func.isRequired,
+  onLoginOpen: PropTypes.func.isRequired,
+  onCustomerDashboard: PropTypes.func.isRequired,
+  onRestaurantDashboard: PropTypes.func.isRequired,
+  user: PropTypes.shape({
+    name: PropTypes.string,
+    email: PropTypes.string,
+    address: PropTypes.string,
+  }),
+  onSearch: PropTypes.func.isRequired,
+  searchQuery: PropTypes.string,
 };
 
 export default Navbar;

@@ -4,8 +4,13 @@ export const useNotification = () => {
   const [notification, setNotification] = useState(null);
 
   const showNotification = useCallback((message, type = 'success') => {
+    if (!message) {
+      setNotification(null);
+      return;
+    }
+
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
+    globalThis.setTimeout(() => setNotification(null), 3000);
   }, []);
 
   return { notification, showNotification };

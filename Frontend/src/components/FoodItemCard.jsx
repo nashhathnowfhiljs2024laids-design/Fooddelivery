@@ -3,7 +3,7 @@ import { Plus, Minus, Leaf, Award, Check } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 
 const FoodItemCard = ({ item, onItemSelect, showNotification }) => {
-  const { cart, addToCart, updateQuantity, getItemQuantity } = useCart();
+  const { addToCart, updateQuantity, getItemQuantity } = useCart();
   const quantity = getItemQuantity(item.id);
   const [showAdded, setShowAdded] = useState(false);
 
@@ -11,7 +11,7 @@ const FoodItemCard = ({ item, onItemSelect, showNotification }) => {
     e.stopPropagation();
     addToCart(item);
     setShowAdded(true);
-    showNotification('Product added to cart');
+    showNotification('Food added to cart successfully');
     setTimeout(() => setShowAdded(false), 2000);
   };
 
